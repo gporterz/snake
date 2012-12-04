@@ -14,22 +14,80 @@ $(document).ready(function(){
 	
 	//Lets save the cell width in a variable for easy control
 	var cw = 10;
-	var d = "right"; //default direction
+	var blued = "right"; //default direction
+	var redd = "right";
+	var greend = "right";
+	var pinkd = "right";
 	var food;
 	
 	//Lets create the snake now
-	var snake_array; //an array of cells to make up the snake
+	var snake_blue; //an array of cells to make up the snake
+	var snake_red;
+	var snake_green;
+	var snake_pink;
+	var length = 10; //Length of the snake
 	
-	
-	function create_snake()
+	function create_snake(snake_arr, xstart, ystart)
 	{
-		var length = 5; //Length of the snake
-		snake_array = []; //Empty array to start with
+		
+		snake_arr = []; //Empty array to start with
 		for(var i = length-1; i>=0; i--)
 		{
 			//This will create a horizontal snake starting from the top left
-			snake_array.push({x: i, y:0});
+			snake_arr.push({x: xstart + i, y:ystart});
 		}
+		return snake_arr;
+	}
+
+	function check_collision(x, y, array)
+	{
+		//This function will check if the provided x/y coordinates exist
+		//in an array of cells or not
+		for(var i = 0; i < array.length; i++)
+		{
+			if(array[i].x == x && array[i].y == y)
+			 return true;
+		}
+		return false;
+	}
+
+	function tryavoid_collision(nx, ny, array, d, tail)
+	{
+		var newd;
+		//directions
+		var change = false;	
+		
+		if (change == false){
+			newd= d;
+		}
+		return newd;
+	}
+	
+	function getdir(nxval, nyval)
+	{
+		var d;
+		if(nxval < food.x)
+		{	
+			d = "right";	
+		}
+		else if(nxval > food.x){
+			
+			d="left";
+		}
+		else if(nyval < food.y)
+		{
+			
+			d="down";
+		}
+		else if(nyval > food.y){
+			
+			d="up";
+		}
+		else{
+			d="right";
+		}
+		return d;
+		
 	}
 
 	function create_food()
@@ -42,25 +100,44 @@ $(document).ready(function(){
 		//Because there are 45(450/10) positions accross the rows and columns
 	}
 
-	function paint_cell(x, y)
+	function paint_cell(x, y, colour)
 	{
-		ctx.fillStyle = "blue";
+		ctx.fillStyle = colour;
 		ctx.fillRect(x*cw, y*cw, cw, cw);
 		ctx.strokeStyle = "white";
 		ctx.strokeRect(x*cw, y*cw, cw, cw);
 	}
 	
+	function foodcheck(nx, ny, snake_array)
+	{
+		if(nx == food.x && ny == food.y)
+		{
+			var tail = {x: nx, y: ny};
+			//Create new food
+			create_food();
+		}
+		else
+		{
+			var tail = snake_array.pop(); //pops out the last cell
+			tail.x = nx; tail.y = ny;
+		}
+		return tail;
+	}
+	
 	function init()
 	{
+		snake_blue = create_snake(snake_blue, 0, 0);
+		snake_red = create_snake(snake_red, (w/cw)-(length + 1), 0);
+		snake_green = create_snake(snake_green, 0, (h/cw)-1);
+		snake_pink = create_snake(snake_pink, (w/cw)-(length + 1), (h/cw)-1);
 		
-		create_snake();
 		create_food(); //Now we can see the food particle
 		
 		
 		//Lets move the snake now using a timer which will trigger the paint function
 		//every 60ms
 		if(typeof game_loop != "undefined") clearInterval(game_loop);
-		game_loop = setInterval(paint, 30);
+		game_loop = setInterval(paint, 40);
 	}
 	init();
 
@@ -76,97 +153,121 @@ $(document).ready(function(){
 		ctx.strokeStyle = "black";
 		ctx.strokeRect(0, 0, w, h);
 		
+		
+
+
 		//The movement code for the snake to come here.
 		//The logic is simple
 		//Pop out the tail cell and place it infront of the head cell
-		var nx = snake_array[0].x;
-		var ny = snake_array[0].y;
-		//These were the position of the head cell.
-		//We will increment it to get the new head position
-		//Lets add proper direction based movement now
-		if(d == "right") nx++;
-		else if(d == "left") nx--;
-		else if(d == "up") ny--;
-		else if(d == "down") ny++;
-		
-		if(nx == -1)
-		{
-			nx++;
-		}
-		if(nx == w/cw)
-		{
-			nx--;
-		}
-		if(ny == -1)
-		{
-			ny++;
-		}
-		if(ny == h/cw)
-		{
-			ny--;
-		}
-		
-		if(nx < food.x)
-		{
-			
-			d = "right";
-			
-		}
-		if(nx > food.x){
-			
-			d="left";
-		}
-		
-		if(ny < food.y)
-		{
-			
-			d="down";
-		}
-		if(ny > food.y){
-			
-			d="up";
-		}
+		var nxb = snake_blue[0].x;
+		var nyb = snake_blue[0].y;
+		var nxr = snake_red[0].x;
+		var nyr = snake_red[0].y;
+		var nxg = snake_green[0].x;
+		var nyg = snake_green[0].y;
+		var nxp = snake_pink[0].x;
+		var nyp = snake_pink[0].y;
 
 		
 		
 
-		if(nx == food.x && ny == food.y)
-		{
-			var tail = {x: nx, y: ny};
-			//Create new food
-			create_food();
-		}
-		else
-		{
-			var tail = snake_array.pop(); //pops out the last cell
-			tail.x = nx; tail.y = ny;
-		}
-		snake_array.unshift(tail); //puts back the tail as the first cell
+		if(blued == "right") nxb++;
+		else if(blued == "left") nxb--;
+		else if(blued == "up") nyb--;
+		else if(blued == "down") nyb++;
 		
-		for(var i = 0; i < snake_array.length; i++)
-		{
-			var c = snake_array[i];
-			//Lets paint 10px wide cells
-			paint_cell(c.x, c.y);
-		}
+		if(redd == "right") nxr++;
+		else if(redd == "left") nxr--;
+		else if(redd == "up") nyr--;
+		else if(redd == "down") nyr++;
 		
-		paint_cell(food.x, food.y);
+		if(greend == "right") nxg++;
+		else if(greend == "left") nxg--;
+		else if(greend == "up") nyg--;
+		else if(greend == "down") nyg++;
+		
+		if(pinkd == "right") nxp++;
+		else if(pinkd == "left") nxp--;
+		else if(pinkd == "up") nyp--;
+		else if(pinkd == "down") nyp++;
+		
+		blued = getdir(nxb, nyb);
+		redd = getdir(nxr, nyr);
+		greend = getdir(nxg, nyg);
+		pinkd = getdir(nxp, nyp);
+			
+		
+		var tailb = foodcheck(nxb, nyb, snake_blue);
+		var tailr = foodcheck(nxr, nyr, snake_red);
+		var tailg = foodcheck(nxg, nyg, snake_green);
+		var tailp = foodcheck(nxp, nyp, snake_pink);
+		
+		//blued = tryavoid_collision(nxb, nyb, snake_blue, blued);
+				
 
+		//if(nxb == -1 || nxb == w/cw || nyb == -1 || nyb == h/cw || check_collision(nxb, nyb, snake_blue)){
+		//	snake_blue = create_snake(snake_blue);
+		//	tail = snake_blue.pop(); //pops out the last cell
+		//	nxb = snake_blue[0].x;
+		//	nyb = snake_blue[0].y;
+		//	tailb.x = nxb; tailb.y = nyb;	
+		//}
+
+		snake_blue.unshift(tailb); //puts back the tail as the first cell
+		snake_red.unshift(tailr);
+		snake_green.unshift(tailg);
+		snake_pink.unshift(tailp);
 		
+		
+		for(var i = 0; i < snake_blue.length; i++)
+		{
+			var c = snake_blue[i];
+			paint_cell(c.x, c.y, "blue");
+		}
+		for(i = 0; i < snake_red.length; i++)
+		{
+			c = snake_red[i];
+			paint_cell(c.x, c.y, "red");
+		}
+		for(i = 0; i < snake_green.length; i++)
+		{
+			c = snake_green[i];
+			paint_cell(c.x, c.y, "green");
+		}
+		for(i = 0; i < snake_pink.length; i++)
+		{
+			c = snake_pink[i];
+			paint_cell(c.x, c.y, "pink");
+		}
+		
+		paint_cell(food.x, food.y, "black");
+		
+		ctx.fillStyle = 'blue';
+		ctx.fillText(snake_blue.length, 5, 10);
+		ctx.fillStyle = 'red';
+		ctx.fillText(snake_red.length,  w-15, 10);
+		ctx.fillStyle = 'green';
+		ctx.fillText(snake_green.length, 5, h-5);
+		ctx.fillStyle = 'pink';
+		ctx.fillText(snake_pink.length, w-15,  h-5);
+	
 	}
+
+	
+	
+	
+
 	
 	//Lets add the keyboard controls now
 	$(document).keydown(function(e){
 		var key = e.which;
 		//We will add another clause to prevent reverse gear
-		if(key == "37") d = "left";
-		else if(key == "38" ) d = "up";
-		else if(key == "39") d = "right";
-		else if(key == "40") d = "down";
+		if(key == "37") blued = "left";
+		else if(key == "38" ) blued = "up";
+		else if(key == "39") blued = "right";
+		else if(key == "40") blued = "down";
 		//The snake is now keyboard controllable
 	})
-	
-	
 	
 	
 	
