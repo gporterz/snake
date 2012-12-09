@@ -1,5 +1,5 @@
 <!-- Lets make a simple snake game -->
-<canvas id="canvas" width="500" height="500"></canvas>
+<canvas id="canvas" width="1000" height="500"></canvas>
 
 <!-- Jquery -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -18,6 +18,9 @@ $(document).ready(function(){
 	var redd = "right";
 	var greend = "right";
 	var pinkd = "right";
+	var dirs = ["right", "right", "right", "right"];
+	var colours = ["blue", "red", "green", "pink"]
+	var tails;
 	var food;
 	
 	//Lets create the snake now
@@ -26,9 +29,27 @@ $(document).ready(function(){
 	var snake_green;
 	var snake_pink;
 	var length = 10; //Length of the snake
+	var arrays;
 	
-	function create_snake(snake_arr, xstart, ystart)
+	function create_snake(snake_arr, index)
 	{
+		if (index == 0) {
+			xstart = 0;
+			ystart = 0;
+		}
+		if (index == 1) {
+			xstart = (w/cw)-(length + 1);
+			ystart = 0;
+		}
+		if (index == 2) {
+			xstart = 0;
+			ystart = (h/cw)-1;
+		}
+		if (index == 3) {
+			xstart = (w/cw)-(length + 1);
+			ystart = (h/cw)-1;
+		}
+				
 		
 		snake_arr = []; //Empty array to start with
 		for(var i = length-1; i>=0; i--)
@@ -126,11 +147,14 @@ $(document).ready(function(){
 	
 	function init()
 	{
-		snake_blue = create_snake(snake_blue, 0, 0);
-		snake_red = create_snake(snake_red, (w/cw)-(length + 1), 0);
-		snake_green = create_snake(snake_green, 0, (h/cw)-1);
-		snake_pink = create_snake(snake_pink, (w/cw)-(length + 1), (h/cw)-1);
+		snake_blue = create_snake(snake_blue, 0);
+		snake_red = create_snake(snake_red, 1);
+		snake_green = create_snake(snake_green, 2);
+		snake_pink = create_snake(snake_pink, 3);
 		
+		arrays = new Array(snake_blue, snake_red, snake_green, snake_pink);
+	
+	
 		create_food(); //Now we can see the food particle
 		
 		
@@ -153,103 +177,62 @@ $(document).ready(function(){
 		ctx.strokeStyle = "black";
 		ctx.strokeRect(0, 0, w, h);
 		
+	
 		
+		
+		
+		var nxes = [arrays.x];
+		var nyes = [arrays.y];
+		
+		dirs.forEach(
+			function updatedirs(value, index){
+				if(value == "right") nxes[index]++;
+				else if(value == "left") nxes[index]--;
+				else if(value == "up") nyes[index]--;
+				else if(value == "down") nyes[index]++;
+				
+				dirs[index] = getdir(nxes[index], nyes[index]);
+			}
+		);
 
-
-		//The movement code for the snake to come here.
-		//The logic is simple
-		//Pop out the tail cell and place it infront of the head cell
-		var nxb = snake_blue[0].x;
-		var nyb = snake_blue[0].y;
-		var nxr = snake_red[0].x;
-		var nyr = snake_red[0].y;
-		var nxg = snake_green[0].x;
-		var nyg = snake_green[0].y;
-		var nxp = snake_pink[0].x;
-		var nyp = snake_pink[0].y;
-
-		
-		
-
-		if(blued == "right") nxb++;
-		else if(blued == "left") nxb--;
-		else if(blued == "up") nyb--;
-		else if(blued == "down") nyb++;
-		
-		if(redd == "right") nxr++;
-		else if(redd == "left") nxr--;
-		else if(redd == "up") nyr--;
-		else if(redd == "down") nyr++;
-		
-		if(greend == "right") nxg++;
-		else if(greend == "left") nxg--;
-		else if(greend == "up") nyg--;
-		else if(greend == "down") nyg++;
-		
-		if(pinkd == "right") nxp++;
-		else if(pinkd == "left") nxp--;
-		else if(pinkd == "up") nyp--;
-		else if(pinkd == "down") nyp++;
-		
-		blued = getdir(nxb, nyb);
-		redd = getdir(nxr, nyr);
-		greend = getdir(nxg, nyg);
-		pinkd = getdir(nxp, nyp);
+		arrays.forEach(
+			function runcheck(value, index){
+				if(check_collision(nxes[index], nyes[index], arrays[index])){
+					arrays[index] = create_snake(arrays[index], index);
+					tail[index] = arrays[index].pop(); //pops out the last cell
+					nxes[index] = arrays[index][0].x;
+					nxes[index] = arrays[index][0].y;
+					tail[index].x = nxes[index]; tail[index].y = nyes[index];	
+				}
+				
+				var tails = foodcheck(nxes[index], nyes[index], arrays[index]);
+				
+				arrays[index].unshift(tails);
+				
+				for(var i = 0; i < arrays[index].length; i++)
+				{
+					var c = arrays[index][i];
+					paint_cell(c.x, c.y, colours[index]);
+				}	
+			}
+		);
 			
 		
-		var tailb = foodcheck(nxb, nyb, snake_blue);
-		var tailr = foodcheck(nxr, nyr, snake_red);
-		var tailg = foodcheck(nxg, nyg, snake_green);
-		var tailp = foodcheck(nxp, nyp, snake_pink);
 		
 		//blued = tryavoid_collision(nxb, nyb, snake_blue, blued);
 				
 
-		//if(nxb == -1 || nxb == w/cw || nyb == -1 || nyb == h/cw || check_collision(nxb, nyb, snake_blue)){
-		//	snake_blue = create_snake(snake_blue);
-		//	tail = snake_blue.pop(); //pops out the last cell
-		//	nxb = snake_blue[0].x;
-		//	nyb = snake_blue[0].y;
-		//	tailb.x = nxb; tailb.y = nyb;	
-		//}
-
-		snake_blue.unshift(tailb); //puts back the tail as the first cell
-		snake_red.unshift(tailr);
-		snake_green.unshift(tailg);
-		snake_pink.unshift(tailp);
-		
-		
-		for(var i = 0; i < snake_blue.length; i++)
-		{
-			var c = snake_blue[i];
-			paint_cell(c.x, c.y, "blue");
-		}
-		for(i = 0; i < snake_red.length; i++)
-		{
-			c = snake_red[i];
-			paint_cell(c.x, c.y, "red");
-		}
-		for(i = 0; i < snake_green.length; i++)
-		{
-			c = snake_green[i];
-			paint_cell(c.x, c.y, "green");
-		}
-		for(i = 0; i < snake_pink.length; i++)
-		{
-			c = snake_pink[i];
-			paint_cell(c.x, c.y, "pink");
-		}
 		
 		paint_cell(food.x, food.y, "black");
 		
-		ctx.fillStyle = 'blue';
-		ctx.fillText(snake_blue.length, 5, 10);
-		ctx.fillStyle = 'red';
-		ctx.fillText(snake_red.length,  w-15, 10);
-		ctx.fillStyle = 'green';
-		ctx.fillText(snake_green.length, 5, h-5);
-		ctx.fillStyle = 'pink';
-		ctx.fillText(snake_pink.length, w-15,  h-5);
+		ctx.fillStyle = colours[0];
+		ctx.fillText(arrays[0].length, 5, 10);
+		ctx.fillStyle = colours[1];
+		ctx.fillText(arrays[1].length,  w-15, 10);
+		ctx.fillStyle =  colours[2];
+		ctx.fillText(arrays[2].length, 5, h-5);
+		ctx.fillStyle =  colours[3];
+		ctx.fillText(arrays[3].length, w-15,  h-5);
 	
 	}
 
