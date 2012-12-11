@@ -14,14 +14,11 @@ $(document).ready(function(){
 	
 	//Lets save the cell width in a variable for easy control
 	var cw = 10;
-	var blued = "right"; //default direction
-	var redd = "right";
-	var greend = "right";
-	var pinkd = "right";
+
 	var dirs = ["right", "right", "right", "right"];
-	var colours = ["blue", "red", "green", "pink"]
-	var nxes = [0,0,0,0]
-	var nyes = [0,0,0,0]
+	var colours = ["blue", "red", "green", "pink"];
+	var nxes = [0,0,0,0];
+	var nyes = [0,0,0,0];
 	var tails;
 	var food;
 	
@@ -74,14 +71,41 @@ $(document).ready(function(){
 		return false;
 	}
 
-	function tryavoid_collision(nx, ny, array, d, tail)
+	function tryavoid_collision(x, y, array, d)
 	{
 		var newd;
 		//directions
+		//if(value == "right") nxes[index]++;
+		//else if(value == "left") nxes[index]--;
+		//else if(value == "up") nyes[index]--;
+		//else if(value == "down") nyes[index]++;
+		
 		var change = false;	
 		
-		if (change == false){
-			newd= d;
+		for(var i = 0; i < array.length; i++)
+		{
+			if(d=="right" && (array[i].x == (x+1) && array[i].y == y)){
+				newd="up";
+				change = true;
+			}
+			if(d=="left" && (array[i].x == (x-1) && array[i].y == y)){
+				newd="down";
+				change = true;
+			}
+			if(d=="up" && (array[i].x == (x+1) && array[i].y == (y+1))){
+				newd="up";
+				change = true;
+			}
+			if(d=="down" && (array[i].x == (x+1) && array[i].y == (y-1))){
+				newd="up";
+				change = true;
+			}
+			 
+		}
+		
+		if (change==false)
+		{
+			newd = d;
 		}
 		return newd;
 	}
@@ -200,6 +224,7 @@ $(document).ready(function(){
 				else if(value == "down") nyes[index]++;
 				
 				element[index] = getdir(nxes[index], nyes[index]);
+				element[index] = tryavoid_collision(nxes[index], nyes[index], arrays[index], element[index])
 			}
 		);
 
@@ -207,9 +232,9 @@ $(document).ready(function(){
 			function runcheck(value, index, element){
 				if(check_collision(nxes[index], nyes[index], element[index])){
 					element[index] = create_snake(element[index], index);
-					var tail = element.pop(); //pops out the last cell
-					nxes[index] = element[0].x;
-					nyes[index] = element[0].y;
+					var tail = element[index].pop(); //pops out the last cell
+					nxes[index] = element[index][0].x;
+					nyes[index] = element[index][0].y;
 					tail.x = nxes[index]; tail.y = nyes[index];	
 				}
 				if(tail == null){
